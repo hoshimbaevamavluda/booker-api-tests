@@ -29,13 +29,31 @@ jobs:
           playwright install
 
       # 4. Запуск тестов
-      - name: Run API tests
+      - name: Run tests
         run: |
-          pytest --alluredir=allure-results
+          pytest tests --alluredir=allure-results
 
-      # 5. Сохранение артефактов Allure
-      - name: Upload allure results
-        uses: actions/upload-artifact@v4
+      - name: Install Allure commandline
+        if: always()
+        run: |
+          npm install -g allure-commandline
+
+      - name: Generate Allure Report
+        if: always()
+        run: |
+          allure generate allure-results -o allure-report --clean
+
+      - name: Setup GitHub Pages
+        if: always()
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: allure-results
-          path: allure-results
+          path: allure-report
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        id: deployment
+        uses: actions/deploy-pages@v4
